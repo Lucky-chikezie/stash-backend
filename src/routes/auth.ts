@@ -1,11 +1,19 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
 import User from '../models/User';
+import { rateLimit } from 'express-rate-limit';
 
 const router = express.Router();
 
+// Rate limit for authentication routes
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // limit each IP to 5 requests per windowMs
+});
+
+
 // POST /auth/signup - Create a new user account
-router.post('/signup', async (req, res) => {
+router.post('/signup', authLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -30,7 +38,7 @@ router.post('/signup', async (req, res) => {
 });
 
 // POST /auth/login - Authenticate user
-router.post('/login', async (req, res) => {
+router.post('/login', authLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
 
