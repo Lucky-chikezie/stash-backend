@@ -11,7 +11,6 @@ const authLimiter = rateLimit({
   max: 5, // limit each IP to 5 requests per windowMs
 });
 
-
 // POST /auth/signup - Create a new user account
 router.post('/signup', authLimiter, async (req, res) => {
   try {
@@ -31,7 +30,13 @@ router.post('/signup', authLimiter, async (req, res) => {
     const newUser = new User({ email, password: hashedPassword });
     await newUser.save();
 
-    res.status(201).json({ message: 'User created successfully', userId: newUser._id });
+    res.status(201).json({
+      message: 'User created successfully',
+      user: {
+        id: newUser._id,
+        email: newUser.email,
+      },
+    });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error });
   }
@@ -56,7 +61,14 @@ router.post('/login', authLimiter, async (req, res) => {
 
     // Return token (we'll use a simple token for now)
     const token = `token_${user._id}`;
-    res.json({ message: 'Login successful', token });
+    res.json({
+      message: 'Login successful',
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+      },
+    });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error });
   }
